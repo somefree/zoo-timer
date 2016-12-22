@@ -67,12 +67,12 @@
  <br>  
  <br>3-如何将 zoo-timer 引入你的项目
   <br>   下载源码, mvn install, 或者直接在/build目录下载打包好的jar, JDK 1.6+, zookeeper版本: 3.4.8 第三方依赖
- ` ``<dependency>
- ` ``<groupId>com.101tec</groupId>
-  `  ``<artifactId>zkclient</artifactId>
- `      ``<version>0.10</version>
- `    ``</dependency>
- <br>    
+ ```<dependency>
+ <br>  <groupId>com.101tec</groupId>
+       <artifactId>zkclient</artifactId>
+       <version>0.10</version>
+     </dependency>
+ ```<br>    
  <br>结束语
   <br>   一个人花了一周在闲暇时间码出来的东西, 难免有闭门造车之嫌, 奈何测试环境案例有限, 所以只做了一些基本的功能测试, 但覆盖了我所能想到的所有情形, 欢迎广大小伙伴参与测试, 使用, 并与我交流反馈, 顺便指点一二, 个人QQ: 305015319, 备注:zootimer
  <br>
