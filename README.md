@@ -32,6 +32,7 @@
  	public ZooTimer(String zkServer, List<ZooTask> zooTaskList) {}
  ```
      <br>ZooTask 是个抽象类, 使用时需要继承它, 实现三个抽象方法:
+     
  ```
  /**
  	 * 主业务方法
@@ -49,7 +50,7 @@
  	 * 用例: 在集群中节点意外下线时, 通知管理员
  	 */
  	public abstract void aliveNodesChange();
-``` 
+```
 <br>  <br> 同时, 需要初始化设置一些必须的参数
 ```
 zooTaskChild
