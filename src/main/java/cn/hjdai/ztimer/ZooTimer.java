@@ -225,5 +225,4 @@ public class ZooTimer {
 		this.zkClient = null;
 		this.startFlag = false;
 	}
-
 }
