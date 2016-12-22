@@ -49,7 +49,8 @@
  <br>	public abstract void aliveNodesChange();
   <br> 
   <br> 同时, 需要初始化设置一些必须的参数
-   <br>zooTaskChild
+```
+<br>zooTaskChild
    <br>.setTaskId("testPRE")// zooTask的唯一标识, 我对"唯一"界定是: process()实现 + 定时策略
  <br>	.setLoadChoice(LoadChoice.ROUND)// 负载策略, 可选项: 随机负载 - 默认值/轮询负载/权重负载
  <br>	.setDelayChoice(DelayChoice.PRE)// 定时策略参数之一, 可选项: 
@@ -64,15 +65,16 @@
   <br> 其它可能需要的参数: 
   <br> .setFirstDate(Date date)// 准点模式下, 第一次执行的准确时间
   <br> .setWeightConfig(Map<String,Integer> map)// 权重负载时, 权重的节点分配, key是IP地址, 权重是大于1的整数, 建议不超过10
- <br>  
+``` <br>  
  <br>3-如何将 zoo-timer 引入你的项目
   <br>   下载源码, mvn install, 或者直接在/build目录下载打包好的jar, JDK 1.6+, zookeeper版本: 3.4.8 第三方依赖
- ```<dependency>
+```
+     <dependency>
        <groupId>com.101tec</groupId>
        <artifactId>zkclient</artifactId>
        <version>0.10</version>
-     </dependency>```
-     
+     </dependency>
+```
  <br>结束语
   <br>   一个人花了一周在闲暇时间码出来的东西, 难免有闭门造车之嫌, 奈何测试环境案例有限, 所以只做了一些基本的功能测试, 但覆盖了我所能想到的所有情形, 欢迎广大小伙伴参与测试, 使用, 并与我交流反馈, 顺便指点一二, 个人QQ: 305015319, 备注:zootimer
  <br>
