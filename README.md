@@ -65,7 +65,7 @@
   <br> 其它可能需要的参数: 
   <br> .setFirstDate(Date date)// 准点模式下, 第一次执行的准确时间
   <br> .setWeightConfig(Map<String,Integer> map)// 权重负载时, 权重的节点分配, key是IP地址, 权重是大于1的整数, 建议不超过10
-``` <br>  
+```  
  <br>3-如何将 zoo-timer 引入你的项目
   <br>   下载源码, mvn install, 或者直接在/build目录下载打包好的jar, JDK 1.6+, zookeeper版本: 3.4.8 第三方依赖
 ```
