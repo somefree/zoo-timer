@@ -31,7 +31,19 @@
  	 */
  	public ZooTimer(String zkServer, List<ZooTask> zooTaskList) {}
  ```
-     <br>ZooTask 是个抽象类, 使用时需要继承它, 实现三个抽象方法: 
+ <br>Zootimer的有两个方法
+```
+	/**
+	 * 启动 zooTimer
+	 */
+	public void start() {...}
+ 
+ 	/**
+	 * 停止 zooTimer, 释放资源, 但仍然保留 ZooTaskList, 如果process()正在执行, 则阻塞至执行结束 或 1小时超时
+	 */
+	public void stop() {...}
+```
+ <br>ZooTask 是个抽象类, 使用时需要继承它, 实现三个抽象方法: 
      
 ```
 /**
