@@ -13,6 +13,7 @@
 ###2-zoo-timer 的模型
 <br>    <br>集群节点的通讯依赖zookeeper中间件, 每一个zookeeper集群, 抽象为一个 ZooTimer 对象, 每一个需要既定周期去定时执行的业务, 抽象为一个 ZooTask 对象, 一个 Zootimer 可以管理多个 ZooTask
  <br>   <br>Zootimer 的构造方法: 
+ ```
  <br>	/**
  <br>	 * 单任务
  <br>	 * 
@@ -29,42 +30,43 @@
  <br>	 * @param ZooTaskList 任务集合
  <br>	 */
  <br>	public ZooTimer(String zkServer, List<ZooTask> zooTaskList) {}
-  <br> 
+ ```
      <br>ZooTask 是个抽象类, 使用时需要继承它, 实现三个抽象方法:
- <br>   /**
- <br>	 * 主业务方法
- <br>	 */
- <br>	public abstract void process(); 
- <br>
- <br>	/**
- <br>	 * 主业务方法发生异常时, 执行该方法
- <br>	 * 用例: 主业务方法异常时, 通知管理员
- <br>	 */
- <br>	public abstract void exceptionHandle();
- <br>
- <br>	/**
- <br>	 * 当zooTask的集群节点发生变化时的处理方法 (有节点加入或移出集群)
- <br>	 * 用例: 在集群中节点意外下线时, 通知管理员
- <br>	 */
- <br>	public abstract void aliveNodesChange();
-  <br> 
-  <br> 同时, 需要初始化设置一些必须的参数
+ ```
+ /**
+ 	 * 主业务方法
+ 	 */
+ 	public abstract void process(); 
+ 
+ /**
+ 	 * 主业务方法发生异常时, 执行该方法
+ 	 * 用例: 主业务方法异常时, 通知管理员
+ 	 */
+ 	public abstract void exceptionHandle();
+ 
+ /**
+ 	 * 当zooTask的集群节点发生变化时的处理方法 (有节点加入或移出集群)
+ 	 * 用例: 在集群中节点意外下线时, 通知管理员
+ 	 */
+ 	public abstract void aliveNodesChange();
+``` 
+<br>  <br> 同时, 需要初始化设置一些必须的参数
 ```
-<br>zooTaskChild
-   <br>.setTaskId("testPRE")// zooTask的唯一标识, 我对"唯一"界定是: process()实现 + 定时策略
- <br>	.setLoadChoice(LoadChoice.ROUND)// 负载策略, 可选项: 随机负载 - 默认值/轮询负载/权重负载
- <br>	.setDelayChoice(DelayChoice.PRE)// 定时策略参数之一, 可选项: 
- <br>	// 1 - 前置间隔: 方法第 n 次执行的[开始], 与第 n+1 次执行的开始, 间隔 fixedDelay 
- <br>	// 2 - 后置间隔: 方法第 n 次执行的[结束], 与第 n+1 次执行的开始, 间隔 fixedDelay - 默认值
- <br>	// 3 - 前置准点间隔: 与前置间隔基本相同, 区别是: 指定了第一次执行的准确时间点
- <br>	// 4 - 后置准点间隔: 与后置间隔基本相同, 区别是: 指定了第一次执行的准确时间点
- <br>	.setInitDelay(2000L)// 定时策略参数之二, 第一次执行延时, 单位ms, 默认5000ms
- <br>	// 说明: 分布式环境下, 该值的精确性并无太大意义, zoo-timer只确保第一次执行延时不小于该设定值
- <br>	.setFixedDelay(10000L);// 定时策略参数之三, 每隔多久, 执行一次, 单位ms, 请与 DelayChoice 参数结合理解
-  <br> 
-  <br> 其它可能需要的参数: 
-  <br> .setFirstDate(Date date)// 准点模式下, 第一次执行的准确时间
-  <br> .setWeightConfig(Map<String,Integer> map)// 权重负载时, 权重的节点分配, key是IP地址, 权重是大于1的整数, 建议不超过10
+zooTaskChild
+.setTaskId("testPRE")// zooTask的唯一标识, 我对"唯一"界定是: process()实现 + 定时策略
+.setLoadChoice(LoadChoice.ROUND)// 负载策略, 可选项: 随机负载 - 默认值/轮询负载/权重负载
+.setDelayChoice(DelayChoice.PRE)// 定时策略参数之一, 可选项: 
+// 1 - 前置间隔: 方法第 n 次执行的[开始], 与第 n+1 次执行的开始, 间隔 fixedDelay 
+// 2 - 后置间隔: 方法第 n 次执行的[结束], 与第 n+1 次执行的开始, 间隔 fixedDelay - 默认值
+// 3 - 前置准点间隔: 与前置间隔基本相同, 区别是: 指定了第一次执行的准确时间点
+// 4 - 后置准点间隔: 与后置间隔基本相同, 区别是: 指定了第一次执行的准确时间点
+.setInitDelay(2000L)// 定时策略参数之二, 第一次执行延时, 单位ms, 默认5000ms
+// 说明: 分布式环境下, 该值的精确性并无太大意义, zoo-timer只确保第一次执行延时不小于该设定值
+.setFixedDelay(10000L);// 定时策略参数之三, 每隔多久, 执行一次, 单位ms, 请与 DelayChoice 参数结合理解
+ 
+// 其它可能需要的参数: 
+.setFirstDate(Date date)// 准点模式下, 第一次执行的准确时间
+.setWeightConfig(Map<String,Integer> map)// 权重负载时, 权重的节点分配, key是IP地址, 权重是大于1的整数, 建议不超过10
 ```  
  <br>3-如何将 zoo-timer 引入你的项目
   <br>   下载源码, mvn install, 或者直接在/build目录下载打包好的jar, JDK 1.6+, zookeeper版本: 3.4.8 第三方依赖
@@ -76,5 +78,5 @@
      </dependency>
 ```
  <br>结束语
-  <br>   一个人花了一周在闲暇时间码出来的东西, 难免有闭门造车之嫌, 奈何测试环境案例有限, 所以只做了一些基本的功能测试, 但覆盖了我所能想到的所有情形, 欢迎广大小伙伴参与测试, 使用, 并与我交流反馈, 顺便指点一二, 个人QQ: 305015319, 备注:zootimer
+<br><br>一个人花了一周在闲暇时间码出来的东西, 难免有闭门造车之嫌, 奈何测试环境案例有限, 所以只做了一些基本的功能测试, 但覆盖了我所能想到的所有情形, 欢迎广大小伙伴参与测试, 使用, 并与我交流反馈, 顺便指点一二, 个人QQ: 305015319, 备注:zootimer
  <br>
