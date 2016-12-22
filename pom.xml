@@ -5,7 +5,6 @@
   <version>1.0.0</version>
 
   <dependencies>
-    <!-- junit -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
