@@ -31,7 +31,7 @@
  	 */
  	public ZooTimer(String zkServer, List<ZooTask> zooTaskList) {}
  ```
-     <br>ZooTask 是个抽象类, 使用时需要继承它, 实现三个抽象方法:
+     <br>ZooTask 是个抽象类, 使用时需要继承它, 实现三个抽象方法: 
      
  ```
  /**
@@ -51,7 +51,9 @@
  	 */
  	public abstract void aliveNodesChange();
 ```
+
 <br>  <br> 同时, 需要初始化设置一些必须的参数
+
 ```
 zooTaskChild
 .setTaskId("testPRE")// zooTask的唯一标识, 我对"唯一"界定是: process()实现 + 定时策略
