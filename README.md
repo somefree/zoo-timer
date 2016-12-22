@@ -11,7 +11,7 @@
     <br><br>我的小目标是: 在分布式部署环境下, 像从前单机部署一样愉快的书写timer代码, 同时, 又能享受分布式部署带来的易扩展性, 于是有了: zoo-timer
     
 ###2-zoo-timer 的模型
-<br>    <br>集群节点的通讯依赖zookeeper中间件, 每一个zookeeper集群, 抽象为一个 ZooTimer 对象, 每一个需要既定周期去定时执行的业务, 抽象为一个 ZooTask 对象, 一个 Zootimer 可以管理多个 ZooTask
+<br>    <br>集群节点的通讯依赖zookeeper中间件, 每一个zookeeper客户端连接, 抽象为一个 ZooTimer 对象, 每一个需要既定周期去定时执行的业务, 抽象为一个 ZooTask 对象, 一个 Zootimer 可以管理多个 ZooTask
  <br>   <br>Zootimer 的构造方法: 
  ```
  /**
@@ -31,7 +31,7 @@
  	 */
  	public ZooTimer(String zkServer, List<ZooTask> zooTaskList) {}
  ```
- <br>Zootimer的有两个方法
+ <br>Zootimer的主要方法
 ```
 	/**
 	 * 启动 zooTimer
@@ -43,7 +43,7 @@
 	 */
 	public void stop() {...}
 ```
- <br>ZooTask 是个抽象类, 使用时需要继承它, 实现三个抽象方法: 
+ <br>ZooTask 包含了一个timer需要定时执行的所有信息, 是个抽象类, 使用时需要继承它, 实现三个抽象方法: 
      
 ```
 /**
@@ -68,7 +68,7 @@
 
 ```
 zooTaskChild
-.setTaskId("testPRE")// zooTask的唯一标识, 我对"唯一"界定是: process()实现 + 定时策略
+.setTaskId("testPRE")// zooTask的唯一标识, 唯一很重要, zookeeper的nodePath都依赖它, 不同timer使用相同id会发生不可预知的错误
 .setLoadChoice(LoadChoice.ROUND)// 负载策略, 可选项: 随机负载 - 默认值/轮询负载/权重负载
 .setDelayChoice(DelayChoice.PRE)// 定时策略参数之一, 可选项: 
 // 1 - 前置间隔: 方法第 n 次执行的[开始], 与第 n+1 次执行的开始, 间隔 fixedDelay 
@@ -83,8 +83,8 @@ zooTaskChild
 .setFirstDate(Date date)// 准点模式下, 第一次执行的准确时间
 .setWeightConfig(Map<String,Integer> map)// 权重负载时, 权重的节点分配, key是IP地址, 权重是大于1的整数, 建议不超过10
 ```  
- <br>3-如何将 zoo-timer 引入你的项目
-  <br>   下载源码, mvn install, 或者直接在/build目录下载打包好的jar, JDK 1.6+, zookeeper版本: 3.4.8 第三方依赖
+<br>3-如何将 zoo-timer 引入你的项目
+<br>   下载源码, mvn install, 或者直接在/build目录下载打包好的jar, JDK 1.6+, zookeeper版本: 3.4.8 第三方依赖
 ```
      <dependency>
        <groupId>com.101tec</groupId>
