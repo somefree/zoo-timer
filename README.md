@@ -14,22 +14,22 @@
 <br>    <br>集群节点的通讯依赖zookeeper中间件, 每一个zookeeper集群, 抽象为一个 ZooTimer 对象, 每一个需要既定周期去定时执行的业务, 抽象为一个 ZooTask 对象, 一个 Zootimer 可以管理多个 ZooTask
  <br>   <br>Zootimer 的构造方法: 
  ```
- <br>	/**
- <br>	 * 单任务
- <br>	 * 
- <br>	 * @param zkServer zookeeper连接地址, 例如:
- <br>	 *           127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
- <br>	 * @param ZooTask 单个任务, 会放入任务集合 ZooTaskList
- <br>	 */
- <br>	public ZooTimer(String zkServer, ZooTask zooTask) {}
- <br>	  /**
- <br>	 * 多任务
- <br>	 * 
- <br>	 * @param zkServer zkServer zookeeper连接地址, 例如:
- <br>	 *           127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
- <br>	 * @param ZooTaskList 任务集合
- <br>	 */
- <br>	public ZooTimer(String zkServer, List<ZooTask> zooTaskList) {}
+ /**
+ 	 * 单任务
+ 	 * 
+ 	 * @param zkServer zookeeper连接地址, 例如:
+ 	 *           127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
+ 	 * @param ZooTask 单个任务, 会放入任务集合 ZooTaskList
+ 	 */
+ 	public ZooTimer(String zkServer, ZooTask zooTask) {}
+ /**
+ 	 * 多任务
+ 	 * 
+ 	 * @param zkServer zkServer zookeeper连接地址, 例如:
+ 	 *           127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
+ 	 * @param ZooTaskList 任务集合
+ 	 */
+ 	public ZooTimer(String zkServer, List<ZooTask> zooTaskList) {}
  ```
      <br>ZooTask 是个抽象类, 使用时需要继承它, 实现三个抽象方法:
  ```
