@@ -31,4 +31,5 @@ public enum DelayChoice {
 	public String toString() {
 		return remark;
 	}
+
 }
