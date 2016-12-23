@@ -26,4 +26,5 @@ public enum LoadChoice {
 	public String toString() {
 		return remark;
 	}
+
 }
