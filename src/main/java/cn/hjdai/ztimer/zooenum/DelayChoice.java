@@ -3,12 +3,12 @@ package cn.hjdai.ztimer.zooenum;
 public enum DelayChoice {
 
 	/**
-	 * 前置间隔: 方法第 n 次执行的[开始], 与第 n+1 次执行的开始, 间隔 fixedDelay
+	 * 前置间隔: 方法第 n 次执行的[开始], 与第 n+1 次执行的开始, 间隔 fixedDelay - 默认值
 	 */
 	PRE("前置间隔"),
 
 	/**
-	 * 后置间隔: 方法第 n 次执行的[结束], 与第 n+1 次执行的开始, 间隔 fixedDelay - 默认值
+	 * 后置间隔: 方法第 n 次执行的[结束], 与第 n+1 次执行的开始, 间隔 fixedDelay
 	 */
 	POST("后置间隔"),
 
@@ -31,4 +31,5 @@ public enum DelayChoice {
 	public String toString() {
 		return remark;
 	}
+
 }

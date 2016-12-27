@@ -32,10 +32,12 @@ public class ZooTimer {
 		return zkServer;
 	}
 
-	private final List<ZooTask> ZooTaskList;// ZooTask 集合
+	private final List<ZooTask> zooTaskList;// ZooTask 集合
+
+	private final List<ZooTaskExecutor> zooTaskExecutorList;// ZooTask 集合
 
 	public List<ZooTask> getZooTaskList() {
-		return ZooTaskList;
+		return zooTaskList;
 	}
 
 	/**
@@ -49,9 +51,10 @@ public class ZooTimer {
 		if (null == zooTask || StringUtil.isBlank(zkServer)) {
 			throw new NullPointerException("[zooTask] or [zkServer] is null");
 		}
-		this.ZooTaskList = new ArrayList<ZooTask>(1);
-		this.ZooTaskList.add(zooTask);
 		this.zkServer = zkServer;
+		this.zooTaskList = new ArrayList<ZooTask>(1);
+		this.zooTaskList.add(zooTask);
+		this.zooTaskExecutorList = new ArrayList<ZooTaskExecutor>(1);
 	}
 
 	/**
@@ -59,14 +62,15 @@ public class ZooTimer {
 	 * 
 	 * @param zkServer zkServer zookeeper连接地址, 例如:
 	 *           127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
-	 * @param ZooTaskList 任务集合
+	 * @param zooTaskList 任务集合
 	 */
 	public ZooTimer(String zkServer, List<ZooTask> zooTaskList) {
 		if (CollectionUtil.isEmpty(zooTaskList) || StringUtil.isBlank(zkServer)) {
 			throw new NullPointerException("[ZooTaskList] or [zkServer] is null");
 		}
-		this.ZooTaskList = zooTaskList;
 		this.zkServer = zkServer;
+		this.zooTaskList = zooTaskList;
+		this.zooTaskExecutorList = new ArrayList<ZooTaskExecutor>(zooTaskList.size());
 	}
 
 	private ZkClient zkClient;// zookeeper 客户端连接
@@ -92,15 +96,16 @@ public class ZooTimer {
 			throw new RuntimeException("zookeeper connect timeout within " + 30 + " s");
 		}
 		// timer初始化
-		this.scheduledThreadPool = Executors.newScheduledThreadPool(ZooTaskList.size());
+		this.scheduledThreadPool = Executors.newScheduledThreadPool(zooTaskList.size());
 
 		// 启动所有 ZooTask
-		for (ZooTask zooTask : ZooTaskList) {
+		for (final ZooTask zooTask : zooTaskList) {
+
 			if (null == zooTask) {
 				continue;
 			}
 			logger.info("starting ZooTask: {}", zooTask);
-			String taskId = zooTask.getTaskId();
+			final String taskId = zooTask.getTaskId();
 			if (StringUtil.isBlank(taskId)) {
 				logger.error("init ZooTask error, [taskId] is null");
 				continue;
@@ -111,8 +116,10 @@ public class ZooTimer {
 				continue;
 			}
 			taskVaildSet.add(taskValid);
+
+			final ZooTaskExecutor zooTaskExecutor = new ZooTaskExecutor(zooTask);
 			Long fixedDelay = zooTask.getFixedDelay();
-			long sleepmills = zooTask.getSleepmills();
+			long sleepmills = zooTaskExecutor.getSleepmills();
 			if (null == fixedDelay || fixedDelay < (2 * sleepmills + 1000L)) {
 				logger.error("init ZooTask error, [fixedDelay] is null or too small");
 				continue;
@@ -122,37 +129,42 @@ public class ZooTimer {
 				logger.error("init ZooTask error, [delayChoice] is null");
 				continue;
 			}
+			this.zooTaskExecutorList.add(zooTaskExecutor);
 
 			String competePath = "/ZooTimer/" + taskId + "-compete";
 			if (!zkClient.exists(competePath)) {
 				zkClient.createPersistent(competePath, true);
 			}
-			zooTask.setCompetePath(competePath);
+			zooTaskExecutor.setCompetePath(competePath);
 			String alivePath = "/ZooTimer/" + taskId + "-alive";
 			if (!zkClient.exists(alivePath)) {
 				zkClient.createPersistent(alivePath, true);
 			}
-			zooTask.setAlivePath(alivePath);
+			zooTaskExecutor.setAlivePath(alivePath);
 			String localAlivePath = alivePath + "/" + zooTask.getLocalIP();
 			if (zkClient.exists(localAlivePath)) {
 				zkClient.delete(localAlivePath);
 			}
 			zkClient.createEphemeral(localAlivePath);
 
-			zkClient.subscribeChildChanges(alivePath, new IZkChildListener() {
+			IZkChildListener aliveChildListener = new IZkChildListener() {
 				@Override
 				public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
 					logger.info("zooTask-[{}] alive nodes change to: {}", new Object[] { zooTask.getTaskId(), currentChilds });
-					zooTask.setGroupCount(0);
+					zooTaskExecutor.setGroupCount(0);
 					try {
-						zooTask.aliveNodesChange();
+						if (zooTask.getLocalIP().equals(currentChilds.get(0))) {
+							zooTask.aliveNodesChange(zooTask.toString(), currentChilds);
+						}
 					} catch (Exception e) {
 						logger.error("zooTask-[" + taskId + "] aliveNodesChange() error !", e);
 					}
 				}
-			});
+			};
+			zkClient.subscribeChildChanges(alivePath, aliveChildListener);
+			zooTaskExecutor.setAliveChildListener(aliveChildListener);
 
-			zooTask.setZkClient(zkClient);
+			zooTaskExecutor.setZkClient(zkClient);
 			long initDelay = zooTask.getInitDelay();
 			Date firstDate = zooTask.getFirstDate();
 			if (DelayChoice.PRE.equals(delayChoice) || DelayChoice.PRE_MOMENT.equals(delayChoice)) {// 固定周期
@@ -163,15 +175,15 @@ public class ZooTimer {
 					delay = initDelay + fixedDelay - (Math.abs(System.currentTimeMillis() - creationTime - initDelay) % fixedDelay);
 				} else if (DelayChoice.PRE_MOMENT.equals(delayChoice)) {// 首次执行时刻有严格需求
 					long firstTimeMillis = null == firstDate ? 0L : firstDate.getTime();
-					long nowTimeMillis = System.currentTimeMillis() + (2 * sleepmills);
+					long nowTimeMillis = System.currentTimeMillis() + 2 * sleepmills;
 					delay = firstTimeMillis > nowTimeMillis ? (firstTimeMillis - nowTimeMillis)
 							: (fixedDelay - ((nowTimeMillis - firstTimeMillis) % fixedDelay));
 				}
 
-				scheduledThreadPool.scheduleAtFixedRate(zooTask, delay, fixedDelay, TimeUnit.MILLISECONDS);
+				scheduledThreadPool.scheduleAtFixedRate(zooTaskExecutor, delay, fixedDelay, TimeUnit.MILLISECONDS);
 			} else if (DelayChoice.POST.equals(delayChoice) || DelayChoice.POST_MOMENT.equals(delayChoice)) {// 固定间隔
 
-				zkClient.subscribeDataChanges(competePath, new IZkDataListener() {
+				IZkDataListener postDataListener = new IZkDataListener() {
 					@Override
 					public void handleDataDeleted(String dataPath) throws Exception {
 						//ignore
@@ -181,12 +193,15 @@ public class ZooTimer {
 					public void handleDataChange(String dataPath, Object data) throws Exception {
 						long currentTimeMillis = System.currentTimeMillis();
 						if ((Long) data > currentTimeMillis) {
-							scheduledThreadPool.schedule(zooTask, (Long) data - currentTimeMillis, TimeUnit.MILLISECONDS);
+							scheduledThreadPool.schedule(zooTaskExecutor, (Long) data - currentTimeMillis, TimeUnit.MILLISECONDS);
 						} else {
 							logger.error("Unexpected error ! zooTask stoped: {}", zooTask);
 						}
 					}
-				});
+				};
+
+				zkClient.subscribeDataChanges(competePath, postDataListener);
+				zooTaskExecutor.setPostPostDataListener(postDataListener);
 
 				long nowTimeMillis = System.currentTimeMillis();
 				if (zkClient.getChildren(alivePath).size() == 1) {
@@ -205,7 +220,7 @@ public class ZooTimer {
 	/**
 	 * 停止 zooTimer, 释放资源, 但仍然保留 ZooTaskList, 如果process()正在执行, 则阻塞至执行结束 或 1小时超时
 	 */
-	public void stop() {
+	public void stopAll() {
 		zkClient.unsubscribeAll();
 		this.scheduledThreadPool.shutdown();
 		try {
@@ -214,15 +229,16 @@ public class ZooTimer {
 			logger.warn("zooTimer 1小时内停止异常,可能某个process()方法被强行中断了", e);
 		}
 		this.scheduledThreadPool = null;
-		for (ZooTask zooTask : ZooTaskList) {
-			zooTask.setZkClient(null);
-			zooTask.setCompetePath(null);
-			zooTask.setAlivePath(null);
-			zooTask.setZooTimerStatus(ZooTimerStatus.STATUS_3);
-			logger.info("stopped ZooTask: {}", zooTask);
+		for (ZooTaskExecutor zooTaskExecutor : zooTaskExecutorList) {
+			zooTaskExecutor.setZkClient(null);
+			zooTaskExecutor.setCompetePath(null);
+			zooTaskExecutor.setAlivePath(null);
+			zooTaskExecutor.getZooTask().setZooTimerStatus(ZooTimerStatus.STATUS_3);
+			logger.info("stopped ZooTask: {}", zooTaskExecutor.getZooTask());
 		}
 		this.zkClient.close();
 		this.zkClient = null;
 		this.startFlag = false;
 	}
+
 }
