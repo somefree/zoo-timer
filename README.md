@@ -10,79 +10,44 @@
 
     <br><br>我的小目标是: 在分布式部署环境下, 像从前单机部署一样愉快的书写timer代码, 同时, 又能享受分布式部署带来的易扩展性, 于是有了: zoo-timer
     
-###2-zoo-timer 的模型
-<br>    <br>集群节点的通讯依赖zookeeper中间件, 每一个zookeeper客户端连接, 抽象为一个 ZooTimer 对象, 每一个需要既定周期去定时执行的业务, 抽象为一个 ZooTask 对象, 一个 Zootimer 可以管理多个 ZooTask
- <br>   <br>Zootimer 的构造方法: 
- ```
- /**
- 	 * 单任务
- 	 * 
- 	 * @param zkServer zookeeper连接地址, 例如:
- 	 *           127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
- 	 * @param ZooTask 单个任务, 会放入任务集合 ZooTaskList
- 	 */
- 	public ZooTimer(String zkServer, ZooTask zooTask) {}
- /**
- 	 * 多任务
- 	 * 
- 	 * @param zkServer zkServer zookeeper连接地址, 例如:
- 	 *           127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
- 	 * @param ZooTaskList 任务集合
- 	 */
- 	public ZooTimer(String zkServer, List<ZooTask> zooTaskList) {}
- ```
- <br>Zootimer的主要方法
+###2-快速开始
+<br><br>集群节点的通讯依赖zookeeper中间件, 每一个zookeeper客户端连接, 抽象为一个 ZooTimer 对象, 每一个需要既定周期去定时执行的业务, 抽象为一个 ZooTask 对象, 一个 Zootimer 可以管理多个 ZooTask
+<br>一个入门示例:
 ```
-	/**
-	 * 启动 zooTimer
-	 */
-	public void start() {...}
- 
- 	/**
-	 * 停止 zooTimer, 释放资源, 但仍然保留 ZooTaskList, 如果process()正在执行, 则阻塞至执行结束 或 1小时超时
-	 */
-	public void stop() {...}
-```
- <br>ZooTask 包含了一个timer需要定时执行的所有信息, 是个抽象类, 使用时需要继承它, 实现三个抽象方法: 
-     
-```
-/**
- 	 * 主业务方法
- 	 */
- 	public abstract void process(); 
- 
- /**
- 	 * 主业务方法发生异常时, 执行该方法
- 	 * 用例: 主业务方法异常时, 通知管理员
- 	 */
- 	public abstract void exceptionHandle();
- 
- /**
- 	 * 当zooTask的集群节点发生变化时的处理方法 (有节点加入或移出集群)
- 	 * 用例: 在集群中节点意外下线时, 通知管理员
- 	 */
- 	public abstract void aliveNodesChange();
-```  
+	public static void main(String[] args) throws Exception {
+		ZooTask zooTask = new ZooTask() {
+			public void process() throws Exception {
+				System.out.println("7777777777777777777777777777777");
+				Thread.sleep(1000L);
+			}
 
-<br>  <br> 同时, 需要初始化设置一些必须的参数
+			@Override
+			public void exceptionHandle(ZooTask zooTask, Exception e) {
+				// 可选的监控预警方法1: 如果 process() 方法抛出了异常, 执行该方法, 该方法可以不重写
+			}
 
+			@Override
+			public void aliveNodesChange(ZooTask zooTask, List<String> currentNodes) {
+				// 可选的监控预警方法2: 如果该zooTask的集群发生了节点变化, 执行该方法, 该方法可以不重写
+			}
+		}.setTaskId("testPRE")// zooTask的唯一标识, 很重要, 不可重复
+				.setTaskDescription("这只是个测试用例")// zooTask描述
+				.setLoadChoice(LoadChoice.ROUND)// 负载策略, 可选项: 随机负载/轮询负载/权重负载
+				.setDelayChoice(DelayChoice.PRE)// 定时策略参数之一, 可选项: 
+				// 前置间隔: 方法第 n 次执行的[开始], 与第 n+1 次执行的开始, 间隔 fixedDelay 
+				// 后置间隔: 方法第 n 次执行的[结束], 与第 n+1 次执行的开始, 间隔 fixedDelay - 默认值
+				// 前置准点间隔: 与前置间隔基本相同, 区别是: 指定了第一次执行的准确时间点
+				// 后置准点间隔: 与后置间隔基本相同, 区别是: 指定了第一次执行的准确时间点
+				.setInitDelay(5000L)// 定时策略参数之二, 第一次执行延时, 单位ms, 默认5000ms
+				// 说明: 分布式环境下, 该值的精确性并无太大意义, zoo-timer只确保程序启动后延时不小于该设定值
+				.setFixedDelay(10000L);// 定时策略参数之三, 每隔多久, 执行一次, 单位ms
+
+		ZooTimer zooTimer = new ZooTimer("127.0.0.1:2181", zooTask);
+		zooTimer.start(); // 启动
+		Thread.sleep(60000L);
+		zooTimer.stopAll(); // 停止
+	}
 ```
-zooTaskChild
-.setTaskId("testPRE")// zooTask的唯一标识, 唯一很重要, zookeeper的nodePath都依赖它, 不同timer使用相同id会发生不可预知的错误
-.setLoadChoice(LoadChoice.ROUND)// 负载策略, 可选项: 随机负载 - 默认值/轮询负载/权重负载
-.setDelayChoice(DelayChoice.PRE)// 定时策略参数之一, 可选项: 
-// 1 - 前置间隔: 方法第 n 次执行的[开始], 与第 n+1 次执行的开始, 间隔 fixedDelay 
-// 2 - 后置间隔: 方法第 n 次执行的[结束], 与第 n+1 次执行的开始, 间隔 fixedDelay - 默认值
-// 3 - 前置准点间隔: 与前置间隔基本相同, 区别是: 指定了第一次执行的准确时间点
-// 4 - 后置准点间隔: 与后置间隔基本相同, 区别是: 指定了第一次执行的准确时间点
-.setInitDelay(2000L)// 定时策略参数之二, 第一次执行延时, 单位ms, 默认5000ms
-// 说明: 分布式环境下, 该值的精确性并无太大意义, zoo-timer只确保第一次执行延时不小于该设定值
-.setFixedDelay(10000L);// 定时策略参数之三, 每隔多久, 执行一次, 单位ms, 请与 DelayChoice 参数结合理解
- 
-// 其它可能需要的参数: 
-.setFirstDate(Date date)// 准点模式下, 第一次执行的准确时间
-.setWeightConfig(Map<String,Integer> map)// 权重负载时, 权重的节点分配, key是IP地址, 权重是大于1的整数, 建议不超过10
-```  
 <br>3-如何将 zoo-timer 引入你的项目
 <br>   下载源码, mvn install, 或者直接在/build目录下载打包好的jar, JDK 1.6+, zookeeper版本: 3.4.8 第三方依赖
 ```
