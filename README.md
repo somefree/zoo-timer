@@ -48,6 +48,7 @@
 		zooTimer.stopAll(); // 停止
 	}
 ```
+<br> wiki页有更多示例...
 ###3-如何将 zoo-timer 引入你的项目
 <br>   下载源码, mvn install, 或者直接在/build目录下载打包好的jar, JDK 1.6+, zookeeper版本: 3.4.8 第三方依赖
 ```
