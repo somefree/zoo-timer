@@ -149,12 +149,12 @@ public class ZooTimer {
 
 			IZkChildListener aliveChildListener = new IZkChildListener() {
 				@Override
-				public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
-					logger.info("zooTask-[{}] alive nodes change to: {}", new Object[] { zooTask.getTaskId(), currentChilds });
+				public void handleChildChange(String parentPath, List<String> currentNodes) throws Exception {
+					logger.info("zooTask-[{}] alive nodes change to: {}", new Object[] { zooTask.getTaskId(), currentNodes });
 					zooTaskExecutor.setGroupCount(0);
 					try {
-						if (zooTask.getLocalIP().equals(currentChilds.get(0))) {
-							zooTask.aliveNodesChange(zooTask.toString(), currentChilds);
+						if (zooTask.getLocalIP().equals(currentNodes.get(0))) {
+							zooTask.aliveNodesChange(zooTask, currentNodes);
 						}
 					} catch (Exception e) {
 						logger.error("zooTask-[" + taskId + "] aliveNodesChange() error !", e);
@@ -220,13 +220,20 @@ public class ZooTimer {
 	/**
 	 * 停止 zooTimer, 释放资源, 但仍然保留 ZooTaskList, 如果process()正在执行, 则阻塞至执行结束 或 1小时超时
 	 */
-	public void stopAll() {
+	public void stop() {
+		stop(3600);
+	}
+
+	/**
+	 * 停止 zooTimer, 释放资源, 但仍然保留 ZooTaskList, 如果process()正在执行, 则阻塞至执行结束 或 超出等待时间
+	 */
+	public void stop(long waitSeconds) {
 		zkClient.unsubscribeAll();
 		this.scheduledThreadPool.shutdown();
 		try {
-			this.scheduledThreadPool.awaitTermination(1, TimeUnit.HOURS);
+			this.scheduledThreadPool.awaitTermination(waitSeconds, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			logger.warn("zooTimer 1小时内停止异常,可能某个process()方法被强行中断了", e);
+			logger.warn("zooTimer " + waitSeconds + "s内停止异常,可能某个process()方法被强行中断了", e);
 		}
 		this.scheduledThreadPool = null;
 		for (ZooTaskExecutor zooTaskExecutor : zooTaskExecutorList) {
