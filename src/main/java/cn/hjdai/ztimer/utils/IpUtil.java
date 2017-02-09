@@ -19,38 +19,42 @@ public class IpUtil {
 			} else {
 				return getLinuxLocalIp();
 			}
+package cn.hjdai.ztimer.utils;
+
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
+
+public class IpUtil {
+
+	/**
+	 * 获取本机IP
+	 * 
+	 * @return
+	 */
+	public static String getLocalIP() {
+		try {
+			if (isWindowsOS()) {
+				return InetAddress.getLocalHost().getHostAddress();
+			} else {
+				return getLinuxLocalIp();
+			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	/**
-	 * 判断操作系统是否是Windows
-	 *
-	 * @return
-	 */
-	public static boolean isWindowsOS() {
-		boolean isWindowsOS = false;
-		String osName = System.getProperty("os.name");
-		if (osName.toLowerCase().indexOf("windows") > -1) {
-			isWindowsOS = true;
-		}
-		return isWindowsOS;
-	}
-
-	/**
 	 * 获取本地Host名称
+	 * 
+	 * @return
 	 */
 	public static String getLocalHostName() throws UnknownHostException {
 		return InetAddress.getLocalHost().getHostName();
 	}
 
-	/**
-	 * 获取Linux下的IP地址
-	 *
-	 * @return IP地址
-	 * @throws SocketException
-	 */
 	private static String getLinuxLocalIp() throws SocketException {
 		String ip = "";
 		for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
@@ -71,4 +75,14 @@ public class IpUtil {
 		return ip;
 	}
 
+	private static boolean isWindowsOS() {
+		boolean isWindowsOS = false;
+		String osName = System.getProperty("os.name");
+		if (osName.toLowerCase().indexOf("windows") > -1) {
+			isWindowsOS = true;
+		}
+		return isWindowsOS;
+	}
+
 }
+
