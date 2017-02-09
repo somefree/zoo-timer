@@ -14,7 +14,7 @@ public abstract class ZooTask {
 	/**
 	 * 业务方法
 	 * 
-	 * @throws Exception
+	 * @throws Exception 异常
 	 */
 	public abstract void process() throws Exception;
 

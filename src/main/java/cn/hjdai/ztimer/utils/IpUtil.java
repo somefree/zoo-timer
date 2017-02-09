@@ -29,7 +29,7 @@ public class IpUtil {
 	 * 获取本地Host名称
 	 * 
 	 * @return 本地 hostname
-	 * @throws UnknownHostException
+	 * @throws UnknownHostException host未知异常
 	 */
 	public static String getLocalHostName() throws UnknownHostException {
 		return InetAddress.getLocalHost().getHostName();
