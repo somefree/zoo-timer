@@ -62,15 +62,15 @@
 
 
 
-###3-如何将 zoo-timer 引入你的项目
+###3-将 zoo-timer 引入你的项目
 
-下载源码, mvn install, 或者直接在/build目录下载打包好的jar, JDK 1.6+, zookeeper版本: 3.4.8 第三方依赖
+JDK 1.6+, zookeeper版本: 3.4.8 
 ```
-     <dependency>
-       <groupId>com.101tec</groupId>
-       <artifactId>zkclient</artifactId>
-       <version>0.10</version>
-     </dependency>
+<dependency>
+  <groupId>com.github.somefree</groupId>
+  <artifactId>zoo-timer</artifactId>
+  <version>1.1.0</version>
+</dependency>
 ```
 
 结束语
