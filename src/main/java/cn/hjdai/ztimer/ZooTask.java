@@ -12,12 +12,14 @@ import cn.hjdai.ztimer.zooenum.ZooTimerStatus;
 public abstract class ZooTask {
 
 	/**
-	 * 主业务方法
+	 * 业务方法
+	 * 
+	 * @throws Exception
 	 */
 	public abstract void process() throws Exception;
 
 	/**
-	 * 主业务方法发生异常时, 执行该方法
+	 * 业务方法发生异常时, 执行该方法
 	 * 用例: 主业务方法异常时, 通知管理员
 	 * 
 	 * @param zooTask zooTask对象
@@ -105,7 +107,8 @@ public abstract class ZooTask {
 	 * zooTask对象初始化时, 内部工具类已经读取本地IP对 localIP 赋值
 	 * 该方法仅供单机模拟集群测试所用, 生产环境不建议手动设置节点IP
 	 * 
-	 * @param localIP
+	 * @param localIP 自定义IP
+	 * @return zootask
 	 */
 	public ZooTask setLocalIP(String localIP) {
 		this.localIP = localIP;

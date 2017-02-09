@@ -7,32 +7,11 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 public class IpUtil {
-	/**
-	 * 获取本地IP地址
-	 *
-	 * @throws SocketException
-	 */
-	public static String getLocalIP() {
-		try {
-			if (isWindowsOS()) {
-				return InetAddress.getLocalHost().getHostAddress();
-			} else {
-				return getLinuxLocalIp();
-			}
-package cn.hjdai.ztimer.utils;
-
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Enumeration;
-
-public class IpUtil {
 
 	/**
 	 * 获取本机IP
 	 * 
-	 * @return
+	 * @return 本地IP
 	 */
 	public static String getLocalIP() {
 		try {
@@ -49,7 +28,8 @@ public class IpUtil {
 	/**
 	 * 获取本地Host名称
 	 * 
-	 * @return
+	 * @return 本地 hostname
+	 * @throws UnknownHostException
 	 */
 	public static String getLocalHostName() throws UnknownHostException {
 		return InetAddress.getLocalHost().getHostName();
@@ -85,4 +65,3 @@ public class IpUtil {
 	}
 
 }
-

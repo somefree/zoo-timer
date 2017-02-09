@@ -41,11 +41,11 @@ public class ZooTimer {
 	}
 
 	/**
-	 * 单任务
+	 * 单个任务
 	 * 
 	 * @param zkServer zookeeper连接地址, 例如:
 	 *           127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
-	 * @param ZooTask 单个任务, 会放入任务集合 ZooTaskList
+	 * @param zooTask 单个任务, 会放入任务集合 ZooTaskList
 	 */
 	public ZooTimer(String zkServer, ZooTask zooTask) {
 		if (null == zooTask || StringUtil.isBlank(zkServer)) {
@@ -226,6 +226,8 @@ public class ZooTimer {
 
 	/**
 	 * 停止 zooTimer, 释放资源, 但仍然保留 ZooTaskList, 如果process()正在执行, 则阻塞至执行结束 或 超出等待时间
+	 * 
+	 * @param waitSeconds 超时时间
 	 */
 	public void stop(long waitSeconds) {
 		zkClient.unsubscribeAll();
