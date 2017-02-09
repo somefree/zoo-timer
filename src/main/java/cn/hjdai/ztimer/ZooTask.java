@@ -20,20 +20,20 @@ public abstract class ZooTask {
 	 * 主业务方法发生异常时, 执行该方法
 	 * 用例: 主业务方法异常时, 通知管理员
 	 * 
-	 * @param string zooTask对象toString(), 详细信息
+	 * @param zooTask zooTask对象
 	 * @param e 主业务方法抛出的异常
 	 */
-	public void exceptionHandle(String string, Exception e) {
+	public void exceptionHandle(ZooTask zooTask, Exception e) {
 	};
 
 	/**
 	 * 当zooTask的集群节点发生变化时的处理方法 (有节点加入或移出集群)
 	 * 用例: 在集群中节点意外下线时, 通知管理员
 	 * 
-	 * @param string zooTask对象toString(), 详细信息
-	 * @param currentChilds 集群中仍然存活的节点
+	 * @param zooTask zooTask对象
+	 * @param currentNodes 集群中仍然存活的节点
 	 */
-	public void aliveNodesChange(String string, List<String> currentChilds) {
+	public void aliveNodesChange(ZooTask zooTask, List<String> currentNodes) {
 	};
 
 	private String taskId;
@@ -155,9 +155,9 @@ public abstract class ZooTask {
 
 	@Override
 	public String toString() {
-		return "ZooTaskModel [taskId=" + taskId + ", taskDescription=" + taskDescription + ", loadChoice=" + loadChoice + ", weightConfig="
-				+ weightConfig + ", delayChoice=" + delayChoice + ", initDelay=" + initDelay + ", firstDate=" + firstDate + ", fixedDelay=" + fixedDelay
-				+ ", localIP=" + localIP + ", zooTimerStatus=" + zooTimerStatus + "]";
+		return "[taskId=" + taskId + ", taskDescription=" + taskDescription + ", loadChoice=" + loadChoice + ", weightConfig=" + weightConfig
+				+ ", delayChoice=" + delayChoice + ", initDelay=" + initDelay + ", firstDate=" + firstDate + ", fixedDelay=" + fixedDelay + ", localIP="
+				+ localIP + ", zooTimerStatus=" + zooTimerStatus + "]";
 	}
 
 }

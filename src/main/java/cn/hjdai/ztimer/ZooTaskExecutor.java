@@ -144,13 +144,13 @@ class ZooTaskExecutor implements Runnable {
 			groupCount++;
 			totalCount++;
 			List<String> aliveNodes = zkClient.getChildren(alivePath);
-			logger.info("zooTask-[{}] process() begin-{}-{}, nodes: {}", new Object[] { taskId, totalCount, groupCount, aliveNodes });
+			logger.info("zooTask-[{}] process() begin-{}-{}, alive nodes: {}", new Object[] { taskId, totalCount, groupCount, aliveNodes });
 			try {
 				zooTask.process();
 			} catch (Exception e) {
 				logger.error("zooTask-[" + taskId + "] process() error ! exceptionHandle() begin...", e);
 				try {
-					zooTask.exceptionHandle(this.toString(), e);
+					zooTask.exceptionHandle(this.getZooTask(), e);
 				} catch (Exception e1) {
 					logger.error("zooTask-[" + taskId + "] exceptionHandle() error !", e1);
 				}
